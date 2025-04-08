@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "WebSocketServer",
+            "request": "launch",
+            "mainClass": "WebSocketServer",
+            "projectName": "WebSockets_3a743d1e"
+        },
+        {
+            "type": "java",
             "name": "App",
             "request": "launch",
             "mainClass": "App",

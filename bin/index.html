@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste WebSocket</title>
+</head>
+<body>
+  <script>
+    let ws = new WebSocket("ws://127.0.0.1:8000");
+    ws.onopen = () => {
+      console.log("Conectado!");
+      ws.send("Hello servidor!");
+    };
+    ws.onmessage = (event) => {
+      console.log("Mensagem do servidor:", event.data);
+    };
+    ws.onerror = (error) => {
+      console.error("Erro:", error);
+    };
+  </script>
+</body>
+</html>
