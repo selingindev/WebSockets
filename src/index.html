@@ -1,23 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Teste WebSocket</title>
+    <title>Teste WebSocket</title>
 </head>
 <body>
-  <script>
-    let ws = new WebSocket("ws://127.0.0.1:8000");
-    ws.onopen = () => {
+    <h1>Chat WebSocket</h1>
 
-      console.log("Conectado! ");
-      ws.send("hello wolrd");
-    };
-    ws.onmessage = (event) => {
-  console.log("Mensagem do servidor :" , event.data);
-    };
-    ws.onerror = (error) => {
-      console.error("Erro:", error);
-    };
-  </script>
+    <input id="msgInput" type="text" placeholder="Digite uma mensagem...">
+    <button onclick="enviar()">Enviar</button>
+
+    <ul id="chat"></ul>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000");
+
+        socket.onopen = () => {
+            console.log("Conectado ao servidor");
+        };
+
+        socket.onmessage = (event) => {
+            const chat = document.getElementById("chat");
+            const msg = document.createElement("li");
+            msg.innerText = event.data;
+            chat.appendChild(msg);
+        };
+
+        socket.onclose = () => {
+            console.log("Conexão fechada");
+        };
+
+        function enviar() {
+            const input = document.getElementById("msgInput");
+            const mensagem = input.value;
+            socket.send(mensagem);
+            input.value = "";
+        }
+    </script>
 </body>
 </html>
