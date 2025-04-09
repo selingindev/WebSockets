@@ -101,6 +101,8 @@ public class WebSocketServer {
                 // criando array de bytes para destribuir a masking de quatro em quatro
                 byte[] decodedData = new byte[payloadLength];
                 for (int i = 0; i < payloadLength; i++) {
+                    System.out.println("mascara: " + maskingKey[i]);
+                    System.out.println("byte: " + encodedData[i]);
                     decodedData[i] = (byte) (encodedData[i] ^ maskingKey[i % 4]);
                 }
 
