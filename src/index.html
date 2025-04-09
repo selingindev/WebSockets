@@ -8,11 +8,12 @@
   <script>
     let ws = new WebSocket("ws://127.0.0.1:8000");
     ws.onopen = () => {
-      console.log("Conectado!");
-      ws.send("Hello servidor!");
+
+      console.log("Conectado! ");
+      ws.send("hello wolrd");
     };
     ws.onmessage = (event) => {
-      console.log("Mensagem do servidor:", event.data);
+  console.log("Mensagem do servidor :" , event.data);
     };
     ws.onerror = (error) => {
       console.error("Erro:", error);
