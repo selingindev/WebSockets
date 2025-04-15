@@ -5,20 +5,25 @@
 </head>
 <body>
     <h1>Chat WebSocket</h1>
-
-    <input id="msgInput" type="text" placeholder="Digite uma mensagem...">
+    
+    <input id="msgInput" type="text" 
+    placeholder="Digite uma mensagem...">
     <button onclick="enviar()">Enviar</button>
 
-    <ul id="chat"></ul>
+    <ul id="chat">
+
+
+    </ul>
 
     <script>
         const socket = new WebSocket("ws://localhost:8000");
-
+      
         socket.onopen = () => {
             console.log("Conectado ao servidor");
         };
 
         socket.onmessage = (event) => {
+            console.log(name);
             const chat = document.getElementById("chat");
             const msg = document.createElement("li");
             msg.innerText = event.data;
@@ -32,9 +37,13 @@
         function enviar() {
             const input = document.getElementById("msgInput");
             const mensagem = input.value;
-            socket.send(mensagem);
+            name = prompt("Digite seu nome");    
+            msg = name + ": " + mensagem 
+            socket.send(msg);
             input.value = "";
+        
         }
+
     </script>
 </body>
 </html>
