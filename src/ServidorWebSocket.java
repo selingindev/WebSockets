@@ -83,7 +83,11 @@ public class ServidorWebSocket {
 
             // Laço para ler mensagens do cliente
             while (true) {
+                //ws manda dois byts importantes
+
+                //FIN(1) RSV OPCODE(4)
                 int b1 = entrada.read();
+                //MASK DO USER E O PAYLOAD DA msg
                 int b2 = entrada.read();
 
                 if (b1 == -1 || b2 == -1) {
@@ -91,16 +95,20 @@ public class ServidorWebSocket {
                     break;
                 }
 
+                //verfica se a mensagem termina neste frame se nao necessario criar outro(possivel manipular)
                 boolean fin = (b1 & 0x80) != 0;
+                //tipo da mensagem, texto, binario, ping pong,closse connection ...
                 int opcode = b1 & 0x0F;
+                //mascara obrigatoria que o cliente passa;
                 boolean mascarado = (b2 & 0x80) != 0;
+                //ignora o digito a esquerda e extrai o tamanho da mensagem
                 int tamanhoPayload = b2 & 0x7F;
 
                 if (!mascarado) {
                     System.out.println("Frame não mascarado! (cliente deve sempre mascarar)");
                     break;
                 }
-
+                //caso a mensagem seja mt grande avisa que o dado esta no proximos 8 bytes
                 if (tamanhoPayload == 126) {
                     tamanhoPayload = (entrada.read() << 8) | entrada.read();
                 } else if (tamanhoPayload == 127) {
@@ -108,17 +116,22 @@ public class ServidorWebSocket {
                     break;
                 }
 
+                //cliente envia 4 chave de mscara 
                 byte[] chaveMascara = new byte[4];
                 entrada.read(chaveMascara, 0, 4);
 
+                //byte do estilo UTF8 representando cada letra
                 byte[] dadosCodificados = new byte[tamanhoPayload];
                 entrada.read(dadosCodificados, 0, tamanhoPayload);
 
                 byte[] dadosDecodificados = new byte[tamanhoPayload];
                 for (int i = 0; i < tamanhoPayload; i++) {
+                    //mascara tem o papel de dedodificar o dado do paylaod
+                    //a cada 4 bytes ele volta para o primeiro byte da mascara do cliente
                     dadosDecodificados[i] = (byte) (dadosCodificados[i] ^ chaveMascara[i % 4]);
                 }
 
+                //retorna a mensagem
                 String mensagem = new String(dadosDecodificados, "UTF-8");
                 System.out.println("Mensagem recebida: " + mensagem);
 
@@ -144,10 +157,10 @@ public class ServidorWebSocket {
     }
 
     // Envia uma mensagem para todos os clientes (broadcast)
+    //pega o cliente atual e a mensagem q nosos servidor procesosu
     private static void enviarParaTodos(String mensagem, Socket remetente) {
         for (Socket cliente : clientes) {
             if (cliente.isClosed()) continue;
-
             try {
                 OutputStream saida = cliente.getOutputStream();
                 enviarMensagemWebSocket(saida, mensagem);
@@ -159,12 +172,11 @@ public class ServidorWebSocket {
 
     // Envia uma mensagem WebSocket formatada corretamente
     private static void enviarMensagemWebSocket(OutputStream saida, String mensagem) throws IOException {
+        //converte a string para um array de bytes
         byte[] dados = mensagem.getBytes("UTF-8");
         int contadorFrame = 0;
-        byte[] frame = new byte[10];
-
-        frame[0] = (byte) 129; // FIN + texto
-
+        byte[] frame = new byte[4];
+        frame[0] = (byte) 129; // FIN + codigo texto byte 10000001
         if (dados.length <= 125) {
             frame[1] = (byte) dados.length;
             contadorFrame = 2;
@@ -173,16 +185,7 @@ public class ServidorWebSocket {
             frame[2] = (byte) ((dados.length >> 8) & (byte) 255);
             frame[3] = (byte) (dados.length & (byte) 255);
             contadorFrame = 4;
-        } else {
-            frame[1] = 127;
-            frame[2] = frame[3] = frame[4] = frame[5] = 0;
-            frame[6] = (byte) ((dados.length >> 24) & (byte) 255);
-            frame[7] = (byte) ((dados.length >> 16) & (byte) 255);
-            frame[8] = (byte) ((dados.length >> 8) & (byte) 255);
-            frame[9] = (byte) (dados.length & (byte) 255);
-            contadorFrame = 10;
-        }
-
+        } 
         saida.write(frame, 0, contadorFrame);
         saida.write(dados);
         saida.flush();
